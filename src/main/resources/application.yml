@@ -1,0 +1,20 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: mailWork
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    tags:
+      application: lys-openstack
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    info:
+      enabled: true

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入 layui.css -->
+    <link href="layui/css/layui.css" rel="stylesheet"/>
+
+    <!-- 引入 layui.js -->
+    <script src="layui/layui.js"></script>
+    <script src="jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<form class="layui-form" action="">
+<div class="layui-form-item">
+    <label class="layui-form-label">监听地址</label>
+    <div class="layui-input-inline">
+        <input type="text" name="listenaddress" required
+               lay-verify="required" placeholder="监听地址"
+               class="layui-input" value="*">
+    </div>
+    <label class="layui-form-label">监听端口</label>
+    <div class="layui-input-inline">
+        <input type="text" name="listenport" required
+               lay-verify="required" placeholder="监听端口"
+               class="layui-input">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">目标地址</label>
+    <div class="layui-input-inline">
+        <input type="text" name="connectaddress" required
+               lay-verify="required" placeholder="目标地址"
+               class="layui-input">
+    </div>
+    <label class="layui-form-label">目标端口</label>
+    <div class="layui-input-inline">
+        <input type="text" name="connectport" required
+               lay-verify="required" placeholder="目标端口"
+               class="layui-input">
+    </div>
+    <div class="layui-form-mid layui-word-aux">
+        <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1">添加</button>
+    </div>
+</div>
+</form>
+<table id="demo" lay-filter="test"></table>
+<script type="text/html" id="toolEventDemo">
+    <a className="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script>
+
+    layui.use(['table','form','util'], function(){
+        var table = layui.table;
+        var form = layui.form;
+        var layer = layui.layer;
+        var util = layui.util;
+
+        form.on('submit(demo1)', function(data){
+            $.ajax({
+                method: 'POST',
+                url: '/api/v1/dos/add',
+                contentType: 'application/json',
+                data: JSON.stringify(data.field),
+                success: function (data) {
+                    layer.msg(data.msg, {icon: 1});
+                    // 向服务端发送删除请求，执行完毕后，可通过 reloadData 方法完成数据重载
+                    table.reloadData('demo', {
+                        scrollPos: 'fixed'  // 保持滚动条位置不变 - v2.7.3 新增
+                    });
+                }
+            });
+            return false;
+        });
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            ,url: '/api/v1/dos/get' //数据接口
+            ,method: 'post'
+            ,where: {token: 'sasasas', id: 123}
+            ,contentType: 'application/json'
+            ,page: true //开启分页
+            ,cols: [[ //表头
+                {field: 'id', title: 'ID', sort: true, fixed: 'left'}
+                ,{field: 'listenaddress', title: '监听地址', sort: true}
+                ,{field: 'listenport', title: '监听端口', sort: true}
+                ,{field: 'connectaddress', title: '目标地址', sort: true}
+                ,{field: 'connectport', title: '目标端口', sort: true}
+                ,{title: '操作', width: 80, templet: '#toolEventDemo'}
+            ]]
+        });
+        table.on('tool(test)', function(obj){
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+            if(layEvent === 'del'){ //删除
+                layer.confirm('确定删除吗？', function(index){
+                    $.ajax({
+                        method: 'POST',
+                        url: '/api/v1/dos/delete',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            listenaddress:data.listenaddress,
+                            listenport:data.listenport,
+                            connectaddress:data.connectaddress,
+                            connectport:data.connectport,
+                        }),
+                        success: function (data) {
+                            layer.msg(data.msg, {icon: 1});
+                            // 向服务端发送删除请求，执行完毕后，可通过 reloadData 方法完成数据重载
+                            table.reloadData('demo', {
+                                scrollPos: 'fixed'  // 保持滚动条位置不变 - v2.7.3 新增
+                            });
+                        }
+                    });
+                });
+            }
+        })
+
+    });
+</script>
+
+</body>
+</html>
